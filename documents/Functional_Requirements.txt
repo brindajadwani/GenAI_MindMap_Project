@@ -7,4 +7,10 @@ FR4: The system should combine the user input + answers for the clarification qu
 FR5: The system should ensure that data flows strictly in the given pipeline order: Planner → Structurer → Validator → Enhancer.
 FR6: Planner Agent should break the user's input context into a list of phases and milestones.
 FR7: Structurer Agent should transform the list of phases into a nested tree JSON hierarchy.
-FR8: Validator Agent 
+FR8: Validator Agent should use the logic and format validation to confirm that JSON structure contains all required and relevant keys before rendering.
+FR9: Enhancer Agent should inject relevant emojis, color combinations and generate the summary based on the validated tree received as input.
+FR10: The System should use D3.js library to render the JSON into SVG mindmap.
+FR11: The System should have an export feature using html2canvas to convert SVG mindmap into a downloadable PNG or PDF.
+FR12: The GUI should allow user to zoom in and out and pan across the mindmap canvas.
+FR13: If the API fails to respond, the system should notify the user or show an error message and should provide an option to retry.
+FR14: The frontend should display real time loading indicator showing which agent is currently processing (e.g Planner agent is thinking...) to improve user performance.
