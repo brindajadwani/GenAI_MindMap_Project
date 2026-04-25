@@ -13,31 +13,50 @@ class EnhancerAgent(BaseAgent):
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         validated_output = input_data.get("validated_output", {})
         
-        prompt = f"""Enhance the following roadmap structure with professional visual details and a narrative explanation.
+        # Keyword-to-Emoji Mapping
+        emoji_map = {
+            "foundation": "🧱", "start": "🏁", "basis": "📐",
+            "execution": "🚀", "process": "⚙️", "do": "🛠️",
+            "growth": "🌱", "scale": "📈", "expand": "🏹",
+            "advanced": "🧪", "pro": "🏆", "future": "🔮",
+            "analysis": "📊", "research": "🔍", "data": "💾",
+            "design": "🎨", "plan": "📝", "concept": "💡",
+            "test": "🧪", "verify": "✅", "quality": "💎"
+        }
 
-ROADMAP: {json.dumps(validated_output)}
+        def enhance_node(node, depth):
+            title = node.get("title", "").lower()
+            
+            # 1. Assign Color based on Depth
+            # Use the palette index based on depth (modulo to wrap around if depth is high)
+            color_index = (depth - 1) % len(self.color_palette)
+            node["color"] = self.color_palette[color_index]
+            
+            # 2. Assign Emoji (Prefer existing icon if present)
+            if "icon" not in node or not node["icon"] or node["icon"] == "🔹":
+                assigned_emoji = "🔹" # Default
+                for key, emoji in emoji_map.items():
+                    if key in title:
+                        assigned_emoji = emoji
+                        break
+                node["icon"] = assigned_emoji
 
-Tasks:
-1. Add relevant emojis/icons to every node.
-2. Assign a 'color' (hex code) from the provided palette to each node.
-3. Write a concise 'summary' (2-3 sentences) of the overall strategy.
-4. Write a 'flow_explanation' (bullet points) describing the logical progression.
+            
+            # 3. Recursively enhance children
+            for child in node.get("children", []):
+                enhance_node(child, depth + 1)
 
-Return ONLY valid JSON:
-{{
-  "title": "...",
-  "summary": "...",
-  "flow_explanation": "...",
-  "children": [
-    {{
-      "title": "...",
-      "icon": "...",
-      "color": "...",
-      "tag": "...",
-      "children": [...]
-    }}
-  ]
-}}"""
+        # Process the tree
+        if validated_output:
+            enhance_node(validated_output, 1)
+            
+        # Add basic narrative fields ONLY if missing (Architect should now provide them)
+        if "summary" not in validated_output or not validated_output["summary"]:
+            validated_output["summary"] = f"A strategic roadmap for {validated_output.get('title', 'the topic')}."
+        
+        if "flow_explanation" not in validated_output or not validated_output["flow_explanation"]:
+            validated_output["flow_explanation"] = "Logical progression from foundational elements to execution."
 
-        raw_output = await self.call_llm(prompt)
-        return self.parse_json(raw_output)
+        return validated_output
+
+

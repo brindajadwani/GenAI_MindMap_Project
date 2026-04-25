@@ -12,30 +12,42 @@ class PlannerAgent(BaseAgent):
         
         clarification_text = "\n".join([f"Q: {k} A: {v}" for k, v in clarification.items()]) if clarification else "None"
         
-        prompt = f"""Analyze the input and create a STRATEGIC ROADMAP.
+        prompt = f"""Analyze the input and create a complete, deep hierarchical STRATEGIC ROADMAP.
+        
+        CENTRAL GOAL: {user_input}
+        USER CLARIFICATIONS: {clarification_text}
+        SPECIFIC REQUIREMENTS: {additional}
+        
+        Instructions:
+        1. The Central Goal is the Root of the tree.
+        2. Create 4-5 Sequential Phases as level 1 children.
+        3. Generate logical sub-tasks (level 2 and 3).
+        4. Write a professional 'summary' (2-3 sentences) of this specific roadmap.
+        5. Write a 'flow_explanation' describing the progression between phases.
+        6. **Assign a highly relevant emoji (icon) to EVERY node.**
+        
+        Return ONLY valid JSON:
+        {{
+          "title": "...",
+          "icon": "...",
+          "summary": "...",
+          "flow_explanation": "...",
+          "children": [
+            {{
+              "title": "Phase 1: ...",
+              "icon": "...",
+              "children": [
+                {{ "title": "Task 1.1", "icon": "...", "children": [] }}
+              ]
+            }}
+          ]
+        }}
 
-CENTRAL GOAL: {user_input}
-USER CLARIFICATIONS: {clarification_text}
-SPECIFIC REQUIREMENTS: {additional}
+        
+        INPUT:
+        {user_input}"""
 
-Instructions for a logical "Path":
-1. The Central Goal is the starting point on the far left.
-2. Identify 4-5 Sequential Phases (e.g., Phase 1: Foundation, Phase 2: Execution, etc.).
-3. Each phase must have a clear "Milestone" name.
-4. Ensure the mapping follows a 'natural progression' from start to finish.
-5. Branches must be distinct and not overlap in meaning.
 
-Return ONLY valid JSON:
-{{
-  "central_topic": "...",
-  "branches": ["...", "..."],
-  "relationships": [
-    {{ "from": "...", "to": "...", "label": "next step" }}
-  ]
-}}
-
-INPUT:
-{user_input}"""
 
         raw_output = await self.call_llm(prompt)
         return self.parse_json(raw_output)

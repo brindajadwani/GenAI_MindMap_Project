@@ -53,12 +53,13 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
     gRef.current = g;
 
     // Horizontal Tree Layout
-    const tree = d3.tree().nodeSize([60, 220]);
+    const tree = d3.tree().nodeSize([60, 350]);
     const root = d3.hierarchy(data);
     tree(root);
 
-    // Center the tree vertically on the left
-    g.attr("transform", `translate(150, ${height / 2})`);
+    // Center the tree vertically on the left (Adjusted X for longer titles)
+    g.attr("transform", `translate(250, ${height / 2})`);
+
 
     // Links (Horizontal)
     g.append("g")
@@ -148,7 +149,8 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
     // Store functions for manual buttons and export
     svgRef.current.zoomIn = () => svg.transition().call(zoomBehavior.scaleBy, 1.3);
     svgRef.current.zoomOut = () => svg.transition().call(zoomBehavior.scaleBy, 0.7);
-    svgRef.current.reset = () => svg.transition().call(zoomBehavior.transform, d3.zoomIdentity.translate(150, height / 2));
+    svgRef.current.reset = () => svg.transition().call(zoomBehavior.transform, d3.zoomIdentity.translate(250, height / 2));
+
     svgRef.current.fitView = fitView;
 
     // Initial fit

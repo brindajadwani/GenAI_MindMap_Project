@@ -22,8 +22,6 @@ out/
 build/
 dist/
 public/build/
-.vite/
-**/deps_temp*/
 
 # =========================
 # Logs
@@ -72,3 +70,10 @@ coverage/
 *.crt
 tmp/
 temp/
+
+# =========================
+# Vite Cache
+# =========================
+mindforge/frontend/.vite/
+
+

@@ -48,94 +48,52 @@ class PipelineController:
             "additional_info": additional_info
         }
         
-        # 1. Planner Agent
+        # 1. Architect Stage (Merged Planner & Structurer)
+        # The new PlannerAgent returns a full hierarchy in one call.
         start_time = time.time()
         try:
             planner_output = await self.planner.run(context)
-            context["planner_output"] = planner_output
-            self._log_stage("Planner Agent", "success", time.time() - start_time, len(input_text), len(str(planner_output)))
+            context["structured_output"] = planner_output
+            self._log_stage("Architect Agent", "success", time.time() - start_time, len(input_text), len(str(planner_output)))
         except Exception as e:
-            self._log_stage("Planner Agent", "failed", time.time() - start_time, len(input_text), 0, str(e))
+            self._log_stage("Architect Agent", "failed", time.time() - start_time, len(input_text), 0, str(e))
             raise
 
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(0.1)
 
-        # 2. Structurer Agent
+        # 2. Conditional Validator Stage
         start_time = time.time()
-        try:
-            structured_output = await self.structurer.run({"planner_output": context["planner_output"]})
-            context["structured_output"] = structured_output
-            self._log_stage("Structurer Agent", "success", time.time() - start_time, len(str(planner_output)), len(str(structured_output)))
-        except Exception as e:
-            # Retry policy for structurer
-            logger.warning(f"Structurer failed, retrying once... Error: {e}")
-            try:
-                structured_output = await self.structurer.run({"planner_output": context["planner_output"]})
-                context["structured_output"] = structured_output
-                self._log_stage("Structurer Agent", "retried", time.time() - start_time, len(str(planner_output)), len(str(structured_output)))
-            except Exception as e2:
-                self._log_stage("Structurer Agent", "failed", time.time() - start_time, len(str(planner_output)), 0, str(e2))
-                raise
-
-        await asyncio.sleep(2.0)
-
-        # 3. Validator Agent
-        start_time = time.time()
-        try:
-            validated_output = await self.validator.run({"structured_output": context["structured_output"]})
-            context["validated_output"] = validated_output
-            self._log_stage("Validator Agent", "success", time.time() - start_time, len(str(structured_output)), len(str(validated_output)))
-        except Exception as e:
-            logger.warning(f"Validator failed, continuing with structured output. Error: {e}")
+        issues = self.validator.rule_check(context["structured_output"])
+        if not issues:
             context["validated_output"] = context["structured_output"]
-            self._log_stage("Validator Agent", "skipped", time.time() - start_time, len(str(structured_output)), 0, str(e))
+            self._log_stage("Validator Agent", "skipped (already valid)", 0, len(str(context["structured_output"])), 0)
+        else:
+            try:
+                logger.info(f"Validator found {len(issues)} issues, calling LLM to fix...")
+                validated_output = await self.validator.run({"structured_output": context["structured_output"]})
+                context["validated_output"] = validated_output
+                self._log_stage("Validator Agent", "success (fixed issues)", time.time() - start_time, len(str(context["structured_output"])), len(str(validated_output)))
+            except Exception as e:
+                context["validated_output"] = context["structured_output"]
+                self._log_stage("Validator Agent", "failed to fix", time.time() - start_time, 0, 0, str(e))
 
-        await asyncio.sleep(2.0)
-
-        # 4. Enhancer Agent
+        # 3. Deterministic Enhancer Stage (No API call)
         start_time = time.time()
-        try:
-            enhanced_output = await self.enhancer.run({"validated_output": context["validated_output"]})
-            context["enhanced_output"] = enhanced_output
-            self._log_stage("Enhancer Agent", "success", time.time() - start_time, len(str(validated_output)), len(str(enhanced_output)))
-        except Exception as e:
-            logger.warning(f"Enhancer failed, continuing with validated output. Error: {e}")
-            context["enhanced_output"] = context["validated_output"]
-            self._log_stage("Enhancer Agent", "skipped", time.time() - start_time, len(str(validated_output)), 0, str(e))
+        enhanced_output = await self.enhancer.run({"validated_output": context["validated_output"]})
+        context["enhanced_output"] = enhanced_output
+        self._log_stage("Enhancer Agent", "success (local)", time.time() - start_time, 0, 0)
 
-        await asyncio.sleep(2.0)
+        # 4. Renderer Agent (Local)
+        context["render_output"] = enhanced_output
 
-        # 5. Renderer Agent (Backend preparation)
+        # 5. Exporter Agent (Local)
+        miro_json = await self.exporter.run({"mind_map": context["render_output"]})
+        context["miro_json"] = miro_json
+
+        # 6. Deterministic Tester Agent (No API call)
         start_time = time.time()
-        try:
-            render_output = await self.renderer.run({"enhanced_output": context["enhanced_output"]})
-            context["render_output"] = render_output
-            self._log_stage("Renderer Agent", "success", time.time() - start_time, len(str(context["enhanced_output"])), len(str(render_output)))
-        except Exception as e:
-            self._log_stage("Renderer Agent", "failed", time.time() - start_time, 0, 0, str(e))
-            context["render_output"] = context["enhanced_output"]
-
-        await asyncio.sleep(2.0)
-
-        # 6. Exporter Agent (Miro JSON prep)
-        start_time = time.time()
-        try:
-            miro_json = await self.exporter.run({"mind_map": context["render_output"]})
-            context["miro_json"] = miro_json
-            self._log_stage("Exporter Agent", "success", time.time() - start_time, len(str(context["render_output"])), len(str(miro_json)))
-        except Exception as e:
-            self._log_stage("Exporter Agent", "failed", time.time() - start_time, 0, 0, str(e))
-
-        await asyncio.sleep(2.0)
-
-        # 7. Tester Agent
-        start_time = time.time()
-        try:
-            tester_report = await self.tester.run({"pipeline_outputs": context})
-            self._log_stage("Tester Agent", "success", time.time() - start_time, len(str(context)), len(str(tester_report)))
-        except Exception as e:
-            tester_report = {"valid": True, "quality_score": 0.0, "issues": [str(e)]}
-            self._log_stage("Tester Agent", "failed", time.time() - start_time, 0, 0, str(e))
+        tester_report = await self.tester.run({"pipeline_outputs": context})
+        self._log_stage("Tester Agent", "success (local)", time.time() - start_time, 0, 0)
 
         return {
             "mind_map": context["render_output"],
@@ -144,24 +102,33 @@ class PipelineController:
             "pipeline_log": self.logs
         }
 
+
     async def refine(self, previous_map: Dict, feedback: str) -> Dict[str, Any]:
         """One-trial refinement process"""
         start_time = time.time()
         try:
-            # 1. Run Refiner
+            # 1. Run Refiner (Requires LLM)
             refined_map = await self.refiner.run({
                 "previous_map": previous_map,
                 "feedback": feedback
             })
             
-            # 2. Run Validator on the refined output to ensure it's still good
-            validated_map = await self.validator.run({"structured_output": refined_map})
+            # 2. Conditional Validator Stage
+            issues = self.validator.rule_check(refined_map)
+            if not issues:
+                validated_map = refined_map
+            else:
+                logger.info(f"Refinement introduced {len(issues)} issues, calling LLM to fix...")
+                validated_map = await self.validator.run({"structured_output": refined_map})
             
-            # 3. Regenerate Miro JSON
+            # 3. Apply Local Enhancement (Ensure icons/colors are consistent after change)
+            validated_map = await self.enhancer.run({"validated_output": validated_map})
+            
+            # 4. Regenerate Miro JSON (Local)
             miro_json = await self.exporter.run({"mind_map": validated_map})
             
-            # 4. Run Final Test
-            tester_report = await self.tester.run({"pipeline_outputs": {"mind_map": validated_map}})
+            # 5. Run Final Test (Local)
+            tester_report = await self.tester.run({"pipeline_outputs": {"mind_map": validated_map, "input": feedback}})
             
             self._log_stage("Refinement Process", "success", time.time() - start_time, len(str(previous_map)), len(str(validated_map)))
             
@@ -171,6 +138,7 @@ class PipelineController:
                 "tester_report": tester_report,
                 "pipeline_log": self.logs
             }
+
         except Exception as e:
             self._log_stage("Refinement Process", "failed", time.time() - start_time, 0, 0, str(e))
             raise
