@@ -58,7 +58,7 @@ class PipelineController:
             self._log_stage("Planner Agent", "failed", time.time() - start_time, len(input_text), 0, str(e))
             raise
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 2. Structurer Agent
         start_time = time.time()
@@ -77,7 +77,7 @@ class PipelineController:
                 self._log_stage("Structurer Agent", "failed", time.time() - start_time, len(str(planner_output)), 0, str(e2))
                 raise
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 3. Validator Agent
         start_time = time.time()
@@ -90,7 +90,7 @@ class PipelineController:
             context["validated_output"] = context["structured_output"]
             self._log_stage("Validator Agent", "skipped", time.time() - start_time, len(str(structured_output)), 0, str(e))
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 4. Enhancer Agent
         start_time = time.time()
@@ -103,7 +103,7 @@ class PipelineController:
             context["enhanced_output"] = context["validated_output"]
             self._log_stage("Enhancer Agent", "skipped", time.time() - start_time, len(str(validated_output)), 0, str(e))
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 5. Renderer Agent (Backend preparation)
         start_time = time.time()
@@ -115,7 +115,7 @@ class PipelineController:
             self._log_stage("Renderer Agent", "failed", time.time() - start_time, 0, 0, str(e))
             context["render_output"] = context["enhanced_output"]
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 6. Exporter Agent (Miro JSON prep)
         start_time = time.time()
@@ -126,7 +126,7 @@ class PipelineController:
         except Exception as e:
             self._log_stage("Exporter Agent", "failed", time.time() - start_time, 0, 0, str(e))
 
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2.0)
 
         # 7. Tester Agent
         start_time = time.time()

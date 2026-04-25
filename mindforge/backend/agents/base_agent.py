@@ -22,7 +22,7 @@ class BaseAgent:
         """To be implemented by subclasses"""
         raise NotImplementedError
 
-    async def call_llm(self, prompt: str, max_retries: int = 3) -> str:
+    async def call_llm(self, prompt: str, max_retries: int = 5) -> str:
         if not self.api_key:
             raise ValueError(f"API key missing for agent: {self.name}")
 
@@ -50,8 +50,9 @@ class BaseAgent:
                     )
                     
                     if response.status_code == 429:
-                        wait_time = (attempt + 1) * 2
-                        print(f"XXRATE LIMIT (429) for {self.name}. Retrying in {wait_time}s...XX")
+                        # Exponential backoff: 2, 4, 8, 16, 32...
+                        wait_time = (2 ** (attempt + 1))
+                        print(f"XX RATE LIMIT (429) for {self.name}. Attempt {attempt+1}/{max_retries}. Waiting {wait_time}s... XX")
                         await asyncio.sleep(wait_time)
                         continue
 

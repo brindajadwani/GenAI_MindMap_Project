@@ -7,8 +7,8 @@
   },
   "system_overview": {
     "description": "Mind Map Generator using a multi-agent pipeline. User inputs raw text, the pipeline plans, structures, validates, enhances, renders, exports, and tests the mind map autonomously.",
-    "architecture": "Sequential pipeline using single Groq API key",
-    "flow": "User Input → Planner → Structurer → Validator → Enhancer → Renderer → Exporter → Tester"
+    "architecture": "Sequential multi-agent pipeline with iterative refinement",
+    "flow": "User Input → Clarifier → Planner → Structurer → Validator → Enhancer → Renderer → Exporter → Tester ↔ Refiner"
   },
   "api_config": {
     "provider": "groq",
@@ -24,13 +24,26 @@
     "pipeline_context": "Each agent receives the previous agent's output as its input variable. Variables are injected at runtime by the PipelineController.",
     "variables": {
       "{{input}}": "Raw user text from frontend textarea",
+      "{{clarification_answers}}": "Answers provided by user to Clarifier questions",
       "{{planner_output}}": "JSON output from Planner Agent",
       "{{structured_output}}": "JSON output from Structurer Agent",
       "{{validated_output}}": "JSON output from Validator Agent",
-      "{{enhanced_output}}": "JSON output from Enhancer Agent"
+      "{{enhanced_output}}": "JSON output from Enhancer Agent",
+      "{{feedback}}": "User feedback for refinement"
     }
   },
   "agents": [
+    {
+      "name": "Clarifier Agent",
+      "class": "ClarifierAgent",
+      "type": "LLM",
+      "next_agent": "Planner Agent",
+      "description": "Analyzes initial user input for vagueness. If input is too brief, it generates 2-3 specific questions to gather more context before the mapping starts.",
+      "output_format": {
+        "questions": ["string"]
+      },
+      "prompt_template": "If the input is vague, ask 2-3 specific questions. If it's clear, return empty questions list.\n\nINPUT: {{input}}"
+    },
     {
       "name": "Planner Agent",
       "class": "PlannerAgent",
@@ -128,7 +141,7 @@
       "description": "Converts the enhanced JSON tree into an interactive SVG mind map rendered in the browser. Uses D3.js radial tree layout. Supports pan, zoom, and drag-to-reposition nodes. This is a frontend component — no LLM call needed.",
       "tech": {
         "library": "D3.js v7",
-        "layout": "d3.tree() radial layout",
+        "layout": "d3.tree() horizontal layout",
         "framework": "React component",
         "interactions": [
           "pan",
@@ -224,6 +237,18 @@
         }
       },
       "prompt_template": "Verify the pipeline output quality.\n\nChecks:\n✔ Node count consistency between stages\n✔ Central topic preserved from input to output\n✔ No node exceeds depth 4\n✔ All titles are non-empty strings\n✔ Structure is valid hierarchical JSON\n\nReturn ONLY valid JSON:\n{\n  \"valid\": true,\n  \"issues\": [],\n  \"quality_score\": 0.9,\n  \"agent_statuses\": {}\n}"
+    },
+    {
+      "name": "Refiner Agent",
+      "class": "RefinerAgent",
+      "type": "LLM",
+      "next_agent": "Validator Agent",
+      "description": "Takes an existing mind map and user feedback to produce an updated version. Ensures consistency with the previous structure while incorporating changes.",
+      "output_format": {
+        "title": "string",
+        "children": []
+      },
+      "prompt_template": "Update this mind map based on user feedback. {{feedback}}\n\nPREVIOUS MAP: {{previous_map}}"
     }
   ],
   "pipeline_controller": {
@@ -231,9 +256,9 @@
     "description": "Orchestrates the sequential execution of all agents. Injects outputs from each agent as inputs to the next. Handles retries, skips, and graceful degradation per failure_handling rules. Logs each stage to JSON.",
     "responsibilities": [
       "Load GROK_API_KEY from environment",
-      "Execute agents in order",
+      "Execute agents in order with 2.0s delay to respect rate limits",
       "Pass output of agent N as input to agent N+1",
-      "Apply retry policy on eligible agents",
+      "Apply exponential backoff retry policy on 429 errors",
       "Apply failure_handling rules on agent failure",
       "Collect and return final TesterAgent report"
     ]
@@ -274,11 +299,11 @@
     }
   },
   "retry_policy": {
-    "max_retries": 1,
+    "max_retries": 5,
+    "strategy": "Exponential Backoff (2, 4, 8, 16, 32s)",
     "eligible_agents": [
-      "Structurer Agent"
-    ],
-    "retry_delay_ms": 1000
+      "All LLM Agents"
+    ]
   },
   "caching": {
     "enabled": true,
@@ -323,6 +348,18 @@
       {
         "name": "QualityScorePanel",
         "description": "Shows TesterAgent quality_score and any issues after pipeline completes"
+      },
+      {
+        "name": "ClarificationPanel",
+        "description": "Interactive Q&A step if input is vague"
+      },
+      {
+        "name": "RefinementPanel",
+        "description": "Feedback input for iterative map updates"
+      },
+      {
+        "name": "SummaryPanel",
+        "description": "Displays AI-generated summary and flow explanation"
       }
     ]
   },
@@ -343,6 +380,16 @@
           "tester_report": "TesterAgent output_format object",
           "pipeline_log": "Array of per-agent log entries"
         }
+      },
+      {
+        "method": "POST",
+        "path": "/clarify",
+        "description": "Checks if input is vague and returns clarification questions"
+      },
+      {
+        "method": "POST",
+        "path": "/refine",
+        "description": "Updates an existing mind map based on feedback"
       },
       {
         "method": "GET",
