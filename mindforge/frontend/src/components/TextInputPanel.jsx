@@ -18,6 +18,7 @@ const TextInputPanel = ({ onGenerate, loading }) => {
       <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
         <label className="text-sm font-medium text-slate-400 mb-2">Input Text</label>
         <textarea
+          id="idea-textarea"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Paste your unstructured notes here..."
@@ -25,6 +26,7 @@ const TextInputPanel = ({ onGenerate, loading }) => {
         />
 
         <button
+          id="initial-generate-btn"
           type="submit"
           disabled={loading || !text.trim()}
           className="bg-brand-gold hover:bg-yellow-600 disabled:bg-slate-600 text-slate-900 font-bold py-3 px-4 rounded flex items-center justify-center transition-colors shadow-lg"

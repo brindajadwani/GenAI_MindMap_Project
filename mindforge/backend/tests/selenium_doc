@@ -1,0 +1,19 @@
+GUI Test:
+Input: "Design a smart home IoT system"
+
+Output:
+Starting Refinement Check...
+Step 1: Submitting initial idea...
+Step 2: Validating Clarification Panel...
+  [SUCCESS] Generate button is disabled initially.
+  - Found 4 questions.
+  - Answered question 1
+  - Answered question 2
+  - Answered question 3
+  - Answered question 4
+Step 3: Adding additional context...
+  [SUCCESS] Generate button is now enabled.
+Step 4: Waiting for Mind Map generation...
+Successfully generated mind map: IoT System
+
+[TEST PASSED] Full pipeline from input to mind map completion works!

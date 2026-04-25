@@ -36,11 +36,10 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
                   <button
                     key={opt}
                     onClick={() => handleOptionSelect(q.id, opt)}
-                    className={`text-left p-4 rounded-xl border transition-all ${
-                      answers[q.id] === opt
+                    className={`text-left p-4 rounded-xl border transition-all ${answers[q.id] === opt
                         ? 'bg-brand-gold border-brand-gold text-slate-900 font-bold shadow-[0_0_15px_rgba(200,169,110,0.3)]'
                         : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-brand-gold/50 hover:bg-slate-700'
-                    }`}
+                      }`}
                   >
                     {opt}
                   </button>
@@ -55,6 +54,7 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
               Additional Context (Optional)
             </h3>
             <textarea
+              id="additional-context"
               value={additionalInfo}
               onChange={(e) => setAdditionalInfo(e.target.value)}
               placeholder="Anything else we should know? (e.g. 'Focus on the business aspect', 'Keep it technical')"
@@ -64,6 +64,7 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
         </div>
 
         <button
+          id="final-generate-btn"
           onClick={() => onSubmit(answers, additionalInfo)}
           disabled={loading || !isComplete}
           className="w-full bg-brand-gold hover:bg-yellow-600 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center transition-all group shadow-lg"
