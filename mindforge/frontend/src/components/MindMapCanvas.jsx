@@ -164,13 +164,13 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
   }, [data]);
 
   return (
-    <div className="w-full h-[600px] bg-transparent rounded-lg overflow-hidden relative">
+    <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] bg-transparent rounded-lg overflow-hidden relative">
       <svg id="mindmap-svg" ref={svgRef} viewBox="0 0 1200 800" className="w-full h-full"></svg>
 
       {/* Zoom Controls Overlay */}
       <div 
         data-html2canvas-ignore="true"
-        className="absolute bottom-6 right-6 flex flex-col gap-2 bg-slate-800/80 backdrop-blur-md p-2 rounded-xl border border-slate-700 shadow-2xl z-10"
+        className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-1 md:gap-2 bg-slate-800/80 backdrop-blur-md p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-700 shadow-2xl z-10"
       >
         <button
           onClick={() => svgRef.current.zoomIn()}

@@ -12,15 +12,15 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
   const isComplete = questions.every(q => answers[q.id]);
 
   return (
-    <div className="flex-grow flex flex-col items-center justify-start pt-12 p-8 overflow-y-auto">
-      <div className="max-w-2xl w-full bg-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl mb-12">
+    <div className="flex-grow flex flex-col items-center justify-start pt-6 md:pt-12 p-4 md:p-8 overflow-y-auto">
+      <div className="max-w-2xl w-full bg-slate-800 rounded-2xl p-5 md:p-8 border border-slate-700 shadow-2xl mb-8 md:mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-brand-gold/20 rounded-full text-brand-gold">
-            <HelpCircle size={28} />
+          <div className="p-2 md:p-3 bg-brand-gold/20 rounded-full text-brand-gold">
+            <HelpCircle size={24} className="md:w-7 md:h-7" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-100">Refine Your Idea</h2>
-            <p className="text-slate-400">Answer these to help Grok build a better map.</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-100">Refine Your Idea</h2>
+            <p className="text-sm md:text-base text-slate-400">Answer these to help Grok build a better map.</p>
           </div>
         </div>
 

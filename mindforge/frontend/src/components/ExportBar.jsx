@@ -65,7 +65,7 @@ const ExportBar = ({ mindMapData, miroJson }) => {
   return (
     <div 
       data-html2canvas-ignore="true"
-      className="absolute bottom-6 right-6 z-30"
+      className="fixed lg:absolute bottom-4 right-4 md:bottom-6 md:right-6 z-40"
     >
       <div className="relative">
         {/* Dropdown Menu */}
@@ -98,15 +98,15 @@ const ExportBar = ({ mindMapData, miroJson }) => {
         {/* Main Share Button */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl border ${
+          className={`flex items-center gap-2 md:gap-3 px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold transition-all shadow-xl border text-sm md:text-base ${
             isOpen 
             ? 'bg-brand-gold text-slate-900 border-brand-gold' 
             : 'bg-slate-800 text-brand-gold border-slate-700 hover:border-brand-gold/50'
           }`}
         >
-          <Share2 size={20} />
-          <span>Share Map</span>
-          <ChevronUp size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+          <Share2 size={18} className="md:w-5 md:h-5" />
+          <span className="hidden xs:inline">Share Map</span>
+          <ChevronUp size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
     </div>

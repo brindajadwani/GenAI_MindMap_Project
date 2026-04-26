@@ -12,8 +12,8 @@ const TextInputPanel = ({ onGenerate, loading }) => {
   };
 
   return (
-    <div className="w-80 h-full bg-slate-800 p-6 flex flex-col border-r border-slate-700 shadow-xl">
-      <h1 className="text-2xl font-bold text-brand-gold mb-6">MindForge</h1>
+    <div className="w-full lg:w-80 h-auto lg:h-full bg-slate-800 p-4 md:p-6 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-700 shadow-xl z-20">
+      <h1 className="text-xl md:text-2xl font-bold text-brand-gold mb-4 md:mb-6">MindForge</h1>
       
       <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
         <label className="text-sm font-medium text-slate-400 mb-2">Input Text</label>
@@ -22,7 +22,7 @@ const TextInputPanel = ({ onGenerate, loading }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Paste your unstructured notes here..."
-          className="flex-grow bg-slate-700 border border-slate-600 rounded p-3 text-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold mb-4"
+          className="min-h-[120px] lg:flex-grow bg-slate-700 border border-slate-600 rounded p-3 text-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold mb-4"
         />
 
         <button

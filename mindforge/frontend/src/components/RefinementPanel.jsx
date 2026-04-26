@@ -15,7 +15,7 @@ const RefinementPanel = ({ onRefine, loading, disabled }) => {
   return (
     <div 
       data-html2canvas-ignore="true"
-      className={`absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-20 transition-all ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      className={`absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-20 transition-all ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
     >
       <form 
         onSubmit={handleSubmit}
@@ -38,10 +38,11 @@ const RefinementPanel = ({ onRefine, loading, disabled }) => {
         <button
           type="submit"
           disabled={loading || !feedback.trim() || disabled}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-gold/20 hover:bg-brand-gold/30 disabled:opacity-30 text-brand-gold font-bold rounded-xl border border-brand-gold/30 transition-all active:scale-95 shrink-0"
+          className="flex items-center justify-center gap-2 px-3 md:px-6 py-2.5 bg-brand-gold/20 hover:bg-brand-gold/30 disabled:opacity-30 text-brand-gold font-bold rounded-xl border border-brand-gold/30 transition-all active:scale-95 shrink-0"
         >
-          {loading ? 'Refining...' : 'Update Map'}
+          <span className="hidden sm:inline">{loading ? 'Refining...' : 'Update Map'}</span>
           {!loading && <Send size={16} />}
+          {loading && <RefreshCw size={16} className="animate-spin sm:hidden" />}
         </button>
       </form>
       
