@@ -91,3 +91,36 @@ async def test_nfr5_retry_mechanism_verified():
         with patch("asyncio.sleep", return_value=None):
             await agent.call_llm("test")
             # If it didn't raise, retry worked
+
+@pytest.mark.asyncio
+async def test_nfr6_enhancer_fallback():
+    # Verify that if Enhancer fails, the pipeline still succeeds using validated_output
+    with patch("pipeline_controller.PlannerAgent") as p_planner, \
+         patch("pipeline_controller.StructurerAgent") as p_structurer, \
+         patch("pipeline_controller.ValidatorAgent") as p_validator, \
+         patch("pipeline_controller.EnhancerAgent") as p_enhancer, \
+         patch("pipeline_controller.RendererAgent") as p_renderer, \
+         patch("pipeline_controller.ExporterAgent") as p_exporter, \
+         patch("pipeline_controller.TesterAgent") as p_tester:
+         
+        p_planner.return_value.run = AsyncMock(return_value={"plan": "test"})
+        p_structurer.return_value.run = AsyncMock(return_value={"struct": "test"})
+        p_validator.return_value.run = AsyncMock(return_value={"valid_tree": "no emojis"})
+        
+        # Enhancer specifically fails
+        p_enhancer.return_value.run = AsyncMock(side_effect=Exception("Enhancer Error"))
+        
+        p_renderer.return_value.run = AsyncMock(return_value={"render": "test"})
+        p_exporter.return_value.run = AsyncMock(return_value={"export": "test"})
+        p_tester.return_value.run = AsyncMock(return_value={"quality_score": 10.0})
+        
+        controller = PipelineController(api_key="test")
+        result = await controller.run("Test input")
+        
+        # Should complete successfully despite enhancer failure
+        assert "mind_map" in result
+        
+        # Check logs to ensure enhancer was marked as skipped
+        enhancer_logs = [l for l in controller.logs if l["agent_name"] == "Enhancer Agent"]
+        assert len(enhancer_logs) == 1
+        assert enhancer_logs[0]["status"] == "skipped"
