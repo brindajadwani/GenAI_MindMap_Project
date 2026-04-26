@@ -8,14 +8,16 @@ const QualityScorePanel = ({ report }) => {
   const isGood = score >= 80;
 
   return (
-    <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden group transition-all hover:border-brand-gold/30">
+    <div className="bg-white/5 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden group transition-all hover:border-brand-gold/20">
       {/* Decorative Glow */}
-      <div className="absolute -top-10 -right-10 w-24 h-24 bg-brand-gold/10 rounded-full blur-3xl group-hover:bg-brand-gold/20 transition-colors" />
+      <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-gold/10 rounded-full blur-[60px] group-hover:bg-brand-gold/20 transition-all duration-700" />
       
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex items-center gap-2 self-start mb-2">
-          <ShieldCheck className="text-brand-gold" size={18} />
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">System Audit</h3>
+      <div className="flex flex-col items-center gap-6 relative z-10">
+        <div className="flex items-center gap-2 self-start">
+          <div className="p-1.5 bg-brand-gold/10 rounded-lg">
+            <ShieldCheck className="text-brand-gold" size={16} />
+          </div>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Validation Protocol</h3>
         </div>
 
         {/* Circular Progress */}

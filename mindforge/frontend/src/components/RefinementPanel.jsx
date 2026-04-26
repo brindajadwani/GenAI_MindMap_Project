@@ -15,40 +15,39 @@ const RefinementPanel = ({ onRefine, loading, disabled }) => {
   return (
     <div 
       data-html2canvas-ignore="true"
-      className={`absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-20 transition-all ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      className={`w-full max-w-3xl mx-auto transition-all duration-500 ${disabled ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}
     >
       <form 
         onSubmit={handleSubmit}
-        className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-2 shadow-2xl flex items-center gap-2 group focus-within:border-brand-gold/40 transition-all"
+        className="bg-[#1a2235]/80 backdrop-blur-2xl border border-white/10 rounded-[1.5rem] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-1 group focus-within:border-brand-gold/50 focus-within:shadow-[0_0_30px_rgba(200,169,110,0.15)] transition-all"
       >
-        <div className="flex items-center gap-3 pl-4 pr-2 text-slate-400 shrink-0">
-          <RefreshCw className={`text-brand-gold ${loading ? 'animate-spin' : ''}`} size={18} />
-          <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Regenerator</span>
+        <div className="flex items-center gap-2 pl-4 pr-1 text-slate-500 shrink-0 border-r border-white/5 mr-1">
+          <RefreshCw className={`text-brand-gold ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-700'}`} size={18} />
         </div>
 
         <input
           type="text"
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
-          placeholder={disabled ? "One-trial limit reached" : "Enter update instructions (e.g. 'Add more details to phase 2')..."}
+          placeholder={disabled ? "Maximum refinements reached" : "Refine roadmap (e.g. 'add more tech details')..."}
           disabled={disabled || loading}
-          className="flex-grow bg-transparent border-none py-3 px-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-0"
+          className="flex-grow bg-transparent border-none py-3.5 px-2 text-sm md:text-base text-white placeholder:text-slate-600 focus:outline-none focus:ring-0 min-w-0"
         />
         
         <button
           type="submit"
           disabled={loading || !feedback.trim() || disabled}
-          className="flex items-center justify-center gap-2 px-3 md:px-6 py-2.5 bg-brand-gold/20 hover:bg-brand-gold/30 disabled:opacity-30 text-brand-gold font-bold rounded-xl border border-brand-gold/30 transition-all active:scale-95 shrink-0"
+          className="flex items-center justify-center gap-2 px-5 md:px-7 py-3 bg-brand-gold text-slate-900 font-black rounded-[1.2rem] transition-all active:scale-95 disabled:opacity-20 hover:shadow-[0_0_20px_rgba(200,169,110,0.4)] shrink-0"
         >
-          <span className="hidden sm:inline">{loading ? 'Refining...' : 'Update Map'}</span>
-          {!loading && <Send size={16} />}
-          {loading && <RefreshCw size={16} className="animate-spin sm:hidden" />}
+          <span className="hidden sm:inline text-xs uppercase tracking-widest">{loading ? 'Refining...' : 'Update'}</span>
+          <Send size={18} className={loading ? 'hidden' : 'group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform'} />
+          {loading && <RefreshCw size={18} className="animate-spin sm:hidden" />}
         </button>
       </form>
       
       {!disabled && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full border border-slate-800 text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
-          One Trial Remaining
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#1a2235] px-4 py-1.5 rounded-full border border-white/10 text-[10px] uppercase tracking-[0.2em] text-brand-gold font-black shadow-xl whitespace-nowrap">
+          Secondary Agent Active
         </div>
       )}
     </div>

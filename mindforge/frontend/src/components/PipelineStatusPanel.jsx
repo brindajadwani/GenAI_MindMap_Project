@@ -3,10 +3,12 @@ import { Cpu, Layers, Share2, Activity } from 'lucide-react';
 
 const PipelineStatusPanel = () => {
   return (
-    <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
-      <div className="flex items-center gap-2 mb-6">
-        <Activity className="text-blue-400" size={18} />
-        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Core Pipeline</h3>
+    <div className="bg-white/5 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden group">
+      <div className="flex items-center gap-2 mb-8">
+        <div className="p-1.5 bg-blue-500/10 rounded-lg">
+          <Activity className="text-blue-400" size={16} />
+        </div>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Core Network</h3>
       </div>
 
       <div className="space-y-6">
