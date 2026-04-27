@@ -149,7 +149,7 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
     // Store functions for manual buttons and export
     svgRef.current.zoomIn = () => svg.transition().call(zoomBehavior.scaleBy, 1.3);
     svgRef.current.zoomOut = () => svg.transition().call(zoomBehavior.scaleBy, 0.7);
-    svgRef.current.reset = () => svg.transition().call(zoomBehavior.transform, d3.zoomIdentity.translate(250, height / 2));
+    svgRef.current.reset = () => fitView();
 
     svgRef.current.fitView = fitView;
 
