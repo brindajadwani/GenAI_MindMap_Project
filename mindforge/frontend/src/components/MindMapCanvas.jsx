@@ -125,31 +125,46 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
     svg.call(zoomBehavior);
 
     // Improved Fit View logic
-    const fitView = () => {
-      const bounds = g.node().getBBox();
-      const parent = svg.node().viewBox.baseVal;
-      const fullWidth = parent.width;
-      const fullHeight = parent.height;
-      const width = bounds.width;
-      const height = bounds.height;
-      const midX = bounds.x + width / 2;
-      const midY = bounds.y + height / 2;
+    const fitView = (duration = 0) => {
+      let bounds;
+      try {
+        bounds = g.node().getBBox();
+      } catch (e) {
+        return; // getBBox can fail in some browsers if not rendered
+      }
+      
+      let width = bounds.width;
+      let height = bounds.height;
+      let midX = bounds.x + width / 2;
+      let midY = bounds.y + height / 2;
 
-      if (width === 0 || height === 0) return;
+      // Fallback if dimensions are missing
+      if (!width || !height || width === 0 || height === 0) {
+        width = 600;
+        height = 400;
+        midX = 300;
+        midY = 0;
+      }
 
-      const scale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
+      const fullWidth = 1200;
+      const fullHeight = 800;
+
+      // Clamp scale to respect the [0.1, 5] zoomBehavior extent
+      let scale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
+      scale = Math.max(0.1, Math.min(2.5, scale)); 
+
       const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-      svg.transition().duration(0).call(
+      svg.transition().duration(duration).call(
         zoomBehavior.transform,
         d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
       );
     };
 
     // Store functions for manual buttons and export
-    svgRef.current.zoomIn = () => svg.transition().call(zoomBehavior.scaleBy, 1.3);
-    svgRef.current.zoomOut = () => svg.transition().call(zoomBehavior.scaleBy, 0.7);
-    svgRef.current.reset = () => fitView();
+    svgRef.current.zoomIn = () => svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
+    svgRef.current.zoomOut = () => svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
+    svgRef.current.reset = () => fitView(750);
 
     svgRef.current.fitView = fitView;
 
@@ -170,7 +185,7 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
       {/* Zoom Controls Overlay */}
       <div 
         data-html2canvas-ignore="true"
-        className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-1 md:gap-2 bg-slate-800/80 backdrop-blur-md p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-700 shadow-2xl z-10"
+        className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-1 md:gap-2 bg-slate-800/80 backdrop-blur-md p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-700 shadow-2xl z-30"
       >
         <button
           onClick={() => svgRef.current.zoomIn()}

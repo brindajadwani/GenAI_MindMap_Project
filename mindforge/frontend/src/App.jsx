@@ -167,8 +167,8 @@ function App() {
                   <MindMapCanvas data={mindMapData} onNodeEdit={handleNodeEdit} />
                   
                   {/* Floating Refinement inside canvas but anchored bottom */}
-                  <div className="absolute bottom-6 left-0 w-full px-4 md:px-8 z-20 pointer-events-none">
-                    <div className="pointer-events-auto">
+                  <div className="absolute bottom-6 left-0 w-full pl-4 pr-16 md:px-8 z-20 pointer-events-none flex justify-center">
+                    <div className="w-full max-w-3xl pointer-events-auto">
                       <RefinementPanel
                         onRefine={handleRefine}
                         loading={loading}
