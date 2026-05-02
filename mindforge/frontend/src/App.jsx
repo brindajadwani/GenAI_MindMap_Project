@@ -8,6 +8,7 @@ import SummaryPanel from './components/SummaryPanel';
 import RefinementPanel from './components/RefinementPanel';
 import PipelineStatusPanel from './components/PipelineStatusPanel';
 import { generateMindMap, getClarificationQuestions, refineMindMap } from './services/apiService';
+import { Folder, Clock, Lightbulb, Settings, History, Map } from 'lucide-react';
 
 function App() {
   const [mindMapData, setMindMapData] = useState(null);
@@ -52,7 +53,6 @@ function App() {
   };
 
   const handleNodeEdit = (nodeData, newTitle) => {
-    // Recursive function to update title in the tree
     const updateTree = (nodes) => {
       return nodes.map(node => {
         if (node.title === nodeData.title) {
@@ -81,6 +81,7 @@ function App() {
     setMindMapData(null);
     setInitialText('');
     setRefinementUsed(false);
+    setQuestions([]);
   };
 
   const handleRefine = async (feedback) => {
@@ -101,105 +102,140 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen w-full bg-[#0a0f1d] text-slate-200 overflow-hidden font-sans">
-      {step === 'input' && (
-        <TextInputPanel onGenerate={handleInitialSubmit} loading={loading} />
-      )}
+    <div className="flex h-screen w-full bg-[#1e2330] text-slate-200 overflow-hidden font-sans">
+      
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#1e2330] flex flex-col justify-between border-r border-slate-700/50 z-50 shadow-2xl flex-shrink-0">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-8 px-2 mt-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
+              <span className="text-white font-black text-lg">B</span>
+            </div>
+            <h1 className="text-xl font-bold text-white tracking-tight">BrainWeave</h1>
+          </div>
 
-      <main className="flex-grow p-4 md:p-8 flex flex-col relative overflow-hidden">
+          <nav className="flex flex-col gap-1">
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+              <Folder size={18} />
+              Projects
+            </button>
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+              <Clock size={18} />
+              Recents
+            </button>
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 text-white transition-colors text-sm font-medium mt-2">
+              <Lightbulb size={18} className="text-emerald-400" />
+              Brainstorming Hub
+            </button>
+            
+            <button onClick={reset} className="mt-6 w-full py-2.5 bg-slate-700/50 hover:bg-slate-600 border border-slate-600 rounded-xl text-sm font-bold text-white transition-all shadow-md">
+              Create New Map
+            </button>
+          </nav>
+        </div>
+
+        <div className="p-4 flex flex-col gap-1">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+            <Map size={18} />
+            Project
+          </button>
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+            <History size={18} />
+            Project History
+          </button>
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium">
+            <Settings size={18} />
+            Settings
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content with Background */}
+      <main 
+        className="flex-grow flex flex-col relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80')" }}
+      >
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+        
         {error && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] bg-red-500/90 text-white px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl border border-white/10 text-sm w-[92%] md:w-auto text-center animate-in slide-in-from-top-4 duration-300">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] bg-red-500/90 text-white px-5 py-2.5 rounded-2xl shadow-2xl backdrop-blur-xl border border-white/10 text-sm">
             {error}
           </div>
         )}
 
-        {step === 'input' && (
-          <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-brand-gold/20 blur-3xl rounded-full" />
-              <div className="relative w-20 h-20 md:w-28 md:h-28 bg-slate-800/50 backdrop-blur-xl border border-white/5 rounded-3xl flex items-center justify-center shadow-2xl">
-                <span className="text-4xl md:text-6xl animate-pulse">🧠</span>
+        <div className="relative z-10 flex-grow flex flex-col p-6 h-full">
+          
+          {/* Header */}
+          <header className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold text-white drop-shadow-md">Input Area</h1>
+            
+            <div className="flex items-center gap-3">
+              <span className="text-white text-sm font-medium drop-shadow-md">Map Theme:</span>
+              <div className="bg-white/20 backdrop-blur-md border border-white/20 rounded-lg p-1 flex gap-1">
+                <button className="px-3 py-1 bg-white/40 text-white rounded-md text-sm font-bold shadow-sm">Glass</button>
+                <button className="px-3 py-1 text-slate-200 hover:bg-white/20 rounded-md text-sm font-medium">Woven</button>
+                <button className="px-3 py-1 text-slate-200 hover:bg-white/20 rounded-md text-sm font-medium">Classic</button>
               </div>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">MindForge AI</h2>
-            <p className="text-slate-400 text-lg md:text-xl max-w-md leading-relaxed">
-              Transform your unstructured thoughts into strategic roadmaps with multi-agent intelligence.
-            </p>
-          </div>
-        )}
+          </header>
 
-        {step === 'clarify' && (
-          <ClarificationPanel
-            questions={questions}
-            onSubmit={handleClarificationSubmit}
-            loading={loading}
-          />
-        )}
-
-        {step === 'result' && mindMapData && (
-          <div className="flex-grow flex flex-col min-h-0 animate-in fade-in duration-1000">
-            {/* Header */}
-            <header className="flex items-center justify-between mb-6 gap-4">
-              <div className="flex flex-col min-w-0">
-                <h2 className="text-xl md:text-3xl font-black text-white truncate drop-shadow-sm">
-                  {mindMapData.title}
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Forge Successful</span>
-                </div>
-              </div>
-              <button
-                onClick={reset}
-                className="flex-shrink-0 px-4 py-2 bg-white/5 hover:bg-white/10 active:scale-95 rounded-xl text-xs md:text-sm font-bold border border-white/10 transition-all text-white backdrop-blur-md"
-              >
-                New Map
-              </button>
-            </header>
-
-            <div className="flex-grow flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
-              {/* Main Content Scrollable */}
-              <div className="flex-grow flex flex-col gap-6 overflow-y-auto pr-0 lg:pr-2 custom-scrollbar pb-24 lg:pb-0">
-                
-                {/* Canvas Area */}
-                <section id="mindmap-export-area" className="bg-[#0f172a] rounded-[2rem] border border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative min-h-[450px] md:min-h-[600px] flex-shrink-0 group">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none" />
-                  <MindMapCanvas data={mindMapData} onNodeEdit={handleNodeEdit} />
-                  
-                  {/* Floating Refinement inside canvas but anchored bottom */}
-                  <div className="absolute bottom-6 left-0 w-full pl-4 pr-16 md:px-8 z-20 pointer-events-none flex justify-center">
-                    <div className="w-full max-w-3xl pointer-events-auto">
-                      <RefinementPanel
-                        onRefine={handleRefine}
-                        loading={loading}
-                        disabled={refinementUsed}
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <SummaryPanel
-                  summary={mindMapData.summary}
-                  flowExplanation={mindMapData.flow_explanation}
+          <div className="flex-grow flex flex-col lg:flex-row gap-6 min-h-0">
+            
+            {/* Left Column: Input Panels */}
+            <div className="w-full lg:w-[450px] flex flex-col gap-6 overflow-y-auto custom-scrollbar pr-2 pb-6 flex-shrink-0">
+              
+              {/* Step 1: Always visible */}
+              <TextInputPanel 
+                onGenerate={handleInitialSubmit} 
+                loading={loading && step === 'input'} 
+                initialText={initialText} 
+                setInitialText={setInitialText} 
+              />
+              
+              {/* Step 2: Visible when questions are generated */}
+              {(step === 'clarify' || step === 'result') && questions.length > 0 && (
+                <ClarificationPanel 
+                  questions={questions} 
+                  onSubmit={handleClarificationSubmit} 
+                  loading={loading && step === 'clarify'} 
                 />
-
-                {/* Mobile-only Stats stacking */}
-                <div className="lg:hidden flex flex-col gap-6">
-                  <QualityScorePanel report={testerReport} />
-                  <PipelineStatusPanel />
-                </div>
-              </div>
-
-              {/* Desktop Sidebar */}
-              <aside className="hidden lg:flex w-80 flex-col gap-6 flex-shrink-0">
-                <QualityScorePanel report={testerReport} />
-                <PipelineStatusPanel />
-              </aside>
+              )}
             </div>
 
-            <ExportBar mindMapData={mindMapData} miroJson={miroJson} />
+            {/* Right Column: Structured Map */}
+            <div className="flex-grow bg-slate-100/90 backdrop-blur-xl rounded-2xl border border-white/50 shadow-2xl overflow-hidden flex flex-col relative">
+              
+              {step === 'result' && mindMapData ? (
+                <>
+                  <div className="p-4 border-b border-slate-300/50 flex justify-between items-start bg-white/40">
+                    <div>
+                      <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">STEP 3: YOUR STRUCTURED MAP</h2>
+                      <h1 className="text-xl font-bold text-slate-900">{mindMapData.title}</h1>
+                    </div>
+                    {/* Toolbar is inside MindMapCanvas, but we can have ExportBar logic here if needed */}
+                  </div>
+                  
+                  <div className="flex-grow relative">
+                    <MindMapCanvas data={mindMapData} onNodeEdit={handleNodeEdit} />
+                  </div>
+                  
+                  {/* Export Bar at bottom */}
+                  <div className="absolute bottom-0 left-0 w-full bg-white/60 backdrop-blur-md border-t border-slate-200 p-2">
+                    <ExportBar mindMapData={mindMapData} miroJson={miroJson} />
+                  </div>
+                </>
+              ) : (
+                <div className="flex-grow flex items-center justify-center text-slate-500 p-8 text-center">
+                  <div>
+                    <h2 className="text-lg font-bold mb-2">STEP 3: YOUR STRUCTURED MAP</h2>
+                    <p className="text-sm">Complete Step 1 and 2 to generate your mind map visualization here.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

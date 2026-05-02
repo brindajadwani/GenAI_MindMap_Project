@@ -82,11 +82,19 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
       .join("g")
       .attr("transform", d => `translate(${d.y},${d.x})`);
 
-    node.append("circle")
-      .attr("fill", d => d.data.color || "#c8a96e")
-      .attr("r", d => d.depth === 0 ? 12 : 8)
+    // Pill-shaped background for nodes
+    node.append("rect")
+      .attr("fill", "#ffffff")
+      .attr("stroke", d => d.data.color || "#3b82f6")
+      .attr("stroke-width", 2)
+      .attr("rx", 15) // Rounded corners for pill shape
+      .attr("ry", 15)
+      .attr("x", d => d.children ? -120 : 0) // Adjust x position based on root/leaf
+      .attr("y", -18)
+      .attr("width", 120) // Fixed width or dynamic
+      .attr("height", 36)
       .style("filter", "url(#glow)")
-      .attr("class", "cursor-pointer transition-transform hover:scale-125")
+      .attr("class", "cursor-pointer transition-transform hover:scale-105 shadow-sm")
       .on("dblclick", (event, d) => {
         const newTitle = prompt("Edit node title:", d.data.title);
         if (newTitle && newTitle !== d.data.title) {
@@ -94,24 +102,29 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
         }
       });
 
-    // Text rendering
+    // Text rendering inside the rect
     const text = node.append("text")
       .attr("dy", "0.35em")
-      .attr("x", d => d.children ? -15 : 15)
-      .attr("text-anchor", d => d.children ? "end" : "start")
-      .attr("class", "text-[14px] font-bold tracking-tight pointer-events-none drop-shadow-lg")
-      .attr("fill", "#ffffff");
+      .attr("x", d => d.children ? -60 : 60) // Center text in rect
+      .attr("text-anchor", "middle")
+      .attr("class", "text-[12px] font-bold tracking-tight pointer-events-none")
+      .attr("fill", "#1e293b"); // Dark text for light background
 
     text.append("tspan").text(d => d.data.icon ? d.data.icon + " " : "");
-    text.append("tspan").text(d => d.data.title);
+    
+    // Truncate text if too long
+    text.append("tspan").text(d => {
+      const title = d.data.title || "";
+      return title.length > 15 ? title.substring(0, 15) + "..." : title;
+    });
 
-    // Tags
+    // Tags (Optional, placed below)
     node.filter(d => d.data.tag)
       .append("text")
-      .attr("dy", "1.6em")
-      .attr("x", d => d.children ? -15 : 15)
-      .attr("text-anchor", d => d.children ? "end" : "start")
-      .attr("class", "text-[10px] font-black fill-brand-gold uppercase tracking-widest")
+      .attr("dy", "2.5em")
+      .attr("x", d => d.children ? -60 : 60)
+      .attr("text-anchor", "middle")
+      .attr("class", "text-[9px] font-bold fill-slate-500 uppercase tracking-wider")
       .text(d => d.data.tag);
 
     // Zoom setup
@@ -125,46 +138,31 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
     svg.call(zoomBehavior);
 
     // Improved Fit View logic
-    const fitView = (duration = 0) => {
-      let bounds;
-      try {
-        bounds = g.node().getBBox();
-      } catch (e) {
-        return; // getBBox can fail in some browsers if not rendered
-      }
-      
-      let width = bounds.width;
-      let height = bounds.height;
-      let midX = bounds.x + width / 2;
-      let midY = bounds.y + height / 2;
+    const fitView = () => {
+      const bounds = g.node().getBBox();
+      const parent = svg.node().viewBox.baseVal;
+      const fullWidth = parent.width;
+      const fullHeight = parent.height;
+      const width = bounds.width;
+      const height = bounds.height;
+      const midX = bounds.x + width / 2;
+      const midY = bounds.y + height / 2;
 
-      // Fallback if dimensions are missing
-      if (!width || !height || width === 0 || height === 0) {
-        width = 600;
-        height = 400;
-        midX = 300;
-        midY = 0;
-      }
+      if (width === 0 || height === 0) return;
 
-      const fullWidth = 1200;
-      const fullHeight = 800;
-
-      // Clamp scale to respect the [0.1, 5] zoomBehavior extent
-      let scale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
-      scale = Math.max(0.1, Math.min(2.5, scale)); 
-
+      const scale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
       const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-      svg.transition().duration(duration).call(
+      svg.transition().duration(0).call(
         zoomBehavior.transform,
         d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
       );
     };
 
     // Store functions for manual buttons and export
-    svgRef.current.zoomIn = () => svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3);
-    svgRef.current.zoomOut = () => svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
-    svgRef.current.reset = () => fitView(750);
+    svgRef.current.zoomIn = () => svg.transition().call(zoomBehavior.scaleBy, 1.3);
+    svgRef.current.zoomOut = () => svg.transition().call(zoomBehavior.scaleBy, 0.7);
+    svgRef.current.reset = () => svg.transition().call(zoomBehavior.transform, d3.zoomIdentity.translate(250, height / 2));
 
     svgRef.current.fitView = fitView;
 
@@ -185,7 +183,7 @@ const MindMapCanvas = ({ data, onNodeEdit }) => {
       {/* Zoom Controls Overlay */}
       <div 
         data-html2canvas-ignore="true"
-        className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-1 md:gap-2 bg-slate-800/80 backdrop-blur-md p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-700 shadow-2xl z-30"
+        className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex flex-col gap-1 md:gap-2 bg-slate-800/80 backdrop-blur-md p-1.5 md:p-2 rounded-lg md:rounded-xl border border-slate-700 shadow-2xl z-10"
       >
         <button
           onClick={() => svgRef.current.zoomIn()}

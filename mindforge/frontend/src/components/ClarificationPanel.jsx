@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronRight, MessageSquarePlus } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 const ClarificationPanel = ({ questions, onSubmit, loading }) => {
   const [answers, setAnswers] = useState({});
@@ -12,33 +12,29 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
   const isComplete = questions.every(q => answers[q.id]);
 
   return (
-    <div className="flex-grow flex flex-col items-center justify-start pt-6 md:pt-12 p-4 md:p-8 overflow-y-auto">
-      <div className="max-w-2xl w-full bg-slate-800 rounded-2xl p-5 md:p-8 border border-slate-700 shadow-2xl mb-8 md:mb-12">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 md:p-3 bg-brand-gold/20 rounded-full text-brand-gold">
-            <HelpCircle size={24} className="md:w-7 md:h-7" />
-          </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-100">Refine Your Idea</h2>
-            <p className="text-sm md:text-base text-slate-400">Answer these to help Grok build a better map.</p>
-          </div>
-        </div>
+    <div className="w-full bg-slate-900/60 backdrop-blur-xl p-5 md:p-6 flex flex-col rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.15)] border border-green-500/30 relative overflow-hidden group">
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-purple-500/10 pointer-events-none" />
+      <div className="absolute -inset-[1px] bg-gradient-to-r from-green-500/50 to-purple-500/50 rounded-2xl opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-500" />
 
-        <div className="space-y-8 mb-8">
+      <div className="relative z-10 flex flex-col h-full">
+        <h2 className="text-[11px] font-bold text-white uppercase tracking-widest mb-1">STEP 2: CLARIFY IDEAS</h2>
+        <p className="text-xs text-slate-400 mb-4">System-generated clarification questions based on the input.</p>
+
+        <div className="flex-grow space-y-4 mb-4 overflow-y-auto custom-scrollbar pr-2 max-h-[400px]">
           {questions.map((q) => (
-            <div key={q.id} className="space-y-4">
-              <h3 className="text-lg font-medium text-slate-200">
-                <span className="text-brand-gold mr-2">{q.id}.</span>
-                {q.question}
+            <div key={q.id} className="bg-white/5 rounded-xl border border-white/10 p-3">
+              <h3 className="text-sm font-medium text-slate-200 mb-2">
+                Q{q.id}: {q.question}
               </h3>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-2">
                 {q.options.map((opt) => (
                   <button
                     key={opt}
                     onClick={() => handleOptionSelect(q.id, opt)}
-                    className={`text-left p-4 rounded-xl border transition-all ${answers[q.id] === opt
-                        ? 'bg-brand-gold border-brand-gold text-slate-900 font-bold shadow-[0_0_15px_rgba(200,169,110,0.3)]'
-                        : 'bg-slate-700/50 border-slate-600 text-slate-300 hover:border-brand-gold/50 hover:bg-slate-700'
+                    className={`text-left text-sm p-2 rounded-lg border transition-all ${answers[q.id] === opt
+                        ? 'bg-slate-200 border-slate-300 text-slate-900 font-medium'
+                        : 'bg-transparent border-slate-600/50 text-slate-300 hover:bg-white/10'
                       }`}
                   >
                     {opt}
@@ -47,37 +43,21 @@ const ClarificationPanel = ({ questions, onSubmit, loading }) => {
               </div>
             </div>
           ))}
-
-          <div className="space-y-3 pt-4 border-t border-slate-700">
-            <h3 className="text-lg font-medium text-slate-200 flex items-center gap-2">
-              <MessageSquarePlus size={20} className="text-brand-gold" />
-              Additional Context (Optional)
-            </h3>
-            <textarea
-              id="additional-context"
-              value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-              placeholder="Anything else we should know? (e.g. 'Focus on the business aspect', 'Keep it technical')"
-              className="w-full bg-slate-700 border border-slate-600 rounded-xl p-4 text-slate-200 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-brand-gold"
-            />
-          </div>
         </div>
 
-        <button
-          id="final-generate-btn"
-          onClick={() => onSubmit(answers, additionalInfo)}
-          disabled={loading || !isComplete}
-          className="w-full bg-brand-gold hover:bg-yellow-600 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center transition-all group shadow-lg"
-        >
-          {loading ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-900"></div>
-          ) : (
-            <>
-              Generate Full Mind Map
-              <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </>
-          )}
-        </button>
+        <div className="flex justify-end">
+          <button
+            id="final-generate-btn"
+            onClick={() => onSubmit(answers, additionalInfo)}
+            disabled={loading || !isComplete}
+            className="bg-gradient-to-r from-teal-500 to-emerald-400 hover:from-teal-400 hover:to-emerald-300 disabled:from-slate-700 disabled:to-slate-700 text-white font-bold py-2.5 px-6 rounded-xl flex items-center justify-center transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] disabled:shadow-none text-xs tracking-wider uppercase border border-emerald-400/30"
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            ) : null}
+            Refine & Generate Map
+          </button>
+        </div>
       </div>
     </div>
   );
